@@ -4,13 +4,13 @@
 
 Depending on your plugin's functionality, you may need to perform certain tasks when the plugin is either activated or deactivated. 
 
-In this lesson you're going to learn about two methods that WordPress provides to implement these tasks.
+In this lesson, you're going to learn about two methods that WordPress provides to implement these tasks.
 
 ## Example code
 
-In order to see these in action, let's take the Extra Option plugin from the Naming Collisions lesson. To keep things simple we'll use the prefxied option.
+In order to see these in action, let's take the Extra Option plugin from the Naming Collisions lesson. To keep things simple, we'll use the prefixed option.
 
-If you don't have this code you can create it by creating a plugin in your local WordPress installation using the following code.
+If you don't have this code, you can create it by creating a plugin in your local WordPress installation using the following code.
 
 ```php
 <?php
@@ -67,7 +67,7 @@ function wp_learn_extra_content_activation() {
 }
 ```
 
-If you activate this plugin on a new WordPress install, and browse to the General Settings page, you will see that the Extra Option field has a default value of 'Default extra content'.
+If you activate this plugin on a new WordPress install and browse to the General Settings page, you will see that the Extra Option field has a default value of 'Default extra content'.
 
 > [!NOTE]
 > If you have already created and used the Extra Content plugin in your local WordPress install, you might need to remove the option from your options table.
@@ -95,7 +95,7 @@ It is typically not recommended to remove data when a plugin is deactivated. Thi
 
 However, this does depend on the individual use case and requirements of the plugin's functionality. 
 
-Generally though, data clean up is be done when the plugin is uninstalled, which you will learn about in the lesson on plugin Uninstall Methods.
+Generally though, data cleanup is to be done when the plugin is uninstalled, which you will learn about in the lesson on plugin Uninstall Methods.
 
 ## Different callback implementations
 
