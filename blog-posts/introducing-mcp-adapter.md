@@ -225,6 +225,18 @@ Here's what the configuration looks like for connecting via HTTP transport:
 
 Once you save the configuration file, restart Claude Desktop. You should now see your MCP server listed in the **Developer** tab under **Local MCP servers**. If you see the `running` status next to your server name, you're ready to start using it in your conversations.
 
+### Cursor
+
+In Cursor, navigate to the **Settings** tab (_Cursor → Settings → Cursor Settings_), then select the **Tools and MCP** section. Click on **New MCP Server** button, which will open the mcp.json configuration file for Cursor.
+
+The configuration for Cursor is the same as for Claude Desktop. Once you've added your MCP server configuration, save the file and navigate back to the **Tools and MCP** section in Cursor settings. You should see your MCP server listed there, and you can enable it for use in your coding sessions.
+
+## Claude Code
+
+To add MCP servers to Claude Code, you can either add the `mcpServers` object with the relevant server configs to the `.claude.json` file on your home directory, or create a `.mcp.json` file in your project directory. Adding the MCP servers to the project directory allows you to have different MCP server configurations for different projects, whereas adding them to the home directory makes them available globally across all projects.
+
+Either way, you can use the same configuration format as Cursor or Claude Desktop.
+
 ### VS Code
 
 Configuring VS Code to connect to an MCP server requires setting up a [JSON configuration file that describes the MCP server details](https://code.visualstudio.com/docs/copilot/customization/mcp-servers). This file is usually named `mcp.json` and should be placed in a `.vscode` directory inside your project workspace.
@@ -239,17 +251,11 @@ The only difference between configuring VS Code and Claude Desktop is that you d
 }
 ```
 
-Once you create this file in your project workspace, VS Code displays an MCP control toolbar, where you can start, stop and restart the MCP server. 
+Once you create this file in your project workspace, VS Code displays an MCP control toolbar, where you can start, stop and restart the MCP server.
 
 When the sever has started correctly, it will also show you how many tools are available for the AI to use, in this case three:
 
 ![VS Code MCP Toolbar](https://developer.wordpress.org/news/images/2024/06/vscode-mcp-toolbar.png)
-
-### Cursor
-
-In Cursor, navigate to the **Settings** tab (_Cursor → Settings → Cursor Settings_), then select the **Tools and MCP** section. Click on **New MCP Server** button, which will open the mcp.json configuration file for Cursor.
-
-The configuration for Cursor is the same as for Claude Desktop. Once you've added your MCP server configuration, save the file and navigate back to the **Tools and MCP** section in Cursor settings. You should see your MCP server listed there, and you can enable it for use in your coding sessions.
 
 ## Using MCP tools
 
@@ -285,7 +291,7 @@ The next step is to initialise the MCP Adapter in your plugin or theme:
 
 ```php
 <?php
-if ( ! class_exists( McpAdapter::class ) ) {
+if ( ! class_exists( WP\MCP\Core\McpAdapter::class ) ) {
     // check if the MCP Adapter class is available, if not show some sort of error or admin notice
     return;
 }
@@ -349,17 +355,81 @@ Next require the mcp-adapter package:
 composer require wordpress/mcp-adapter
 ```
 
-Now, open the main plugin file `list-all-urls.php`, and add the following code to initialize the MCP Adapter and create a custom MCP server:
+Now, open the main plugin file `list-all-urls.php`, and add the following code at the bottom of the file to initialize the MCP Adapter and create a custom MCP server:
 
 ```php
 <?php
+if ( ! class_exists( WP\MCP\Core\McpAdapter::class ) ) {
+	return;
+}
 
+// Initialize MCP Adapter and its default server.
+WP\MCP\Core\McpAdapter::instance();
+
+add_action( 'mcp_adapter_init', 'list_all_urls_create_custom_mcp_server' );
+/**
+ * Create a custom MCP server for the List All URLs plugin.
+ *
+ * @param object $adapter WP\MCP\Core\McpAdapter The MCP Adapter instance.
+ * @return void
+ */
+function list_all_urls_create_custom_mcp_server( $adapter ) {
+	$adapter = WP\MCP\Core\McpAdapter::instance();
+	$adapter->create_server(
+		'custom-mcp-server',
+		'custom-mcp-server',
+		'mcp',
+		'Custom MCP Server',
+		'Custom MCP Server',
+		'v1.0.0',
+		array(
+			\WP\MCP\Transport\HttpTransport::class,
+		),
+		\WP\MCP\Infrastructure\ErrorHandling\ErrorLogMcpErrorHandler::class,
+		\WP\MCP\Infrastructure\Observability\NullMcpObservabilityHandler::class,
+		array( 'list-all-urls/urls' ),
+	);
+}
 ```
 
+Now activate the List All URLs plugin from the WordPress admin dashboard. If you had the MCP Adapter plugin activated, you can deactivate it now, as the List All URLs plugin now includes the MCP Adapter as a dependency.
+
+Once the plugin is activated, update your AI application's MCP server configuration to use the new custom MCP server. For example, here's the updated Clade desktop configuration to include both the default MCP server and the new custom MCP server from the List All URLs plugin:
+
+```json
+{
+  "mcpServers": {
+    "ai-experiments-server": {
+      "command": "wp",
+      "args": [
+        "--path=/Users/jonathanbossenger/Studio/ai-experiments",
+        "mcp-adapter",
+        "serve",
+        "--server=mcp-adapter-default-server",
+        "--user=admin"
+      ]
+    },
+    "list-all-urls-mcp-server": {
+      "command": "wp",
+      "args": [
+        "--path=/Users/jonathanbossenger/Studio/ai-experiments",
+        "mcp-adapter",
+        "serve",
+        "--server=list-all-urls-mcp-server",
+        "--user=admin"
+      ]
+    }
+  }
+}
+```
+
+You'll notice that it's possible to have multiple MCP servers configured in the same AI application. This allows you to switch between different WordPress sites or plugins that expose different sets of abilities.
+
+Whatever AI application you're using, make sure to either restart the application, or start the MCP server in the application after updating the MCP server configuration. You should see the new MCP server listed and be able to use the `list-all-urls/urls` ability as an MCP tool. You can then ask the AI to "List all URLs on my WordPress site", and it will call the `list-all-urls-urls` tool via the MCP Adapter.
 
 ## Security and best practices
 
-Because MCP clients act as **logged-in WordPress users**, treat them as part of your application surface area:
+Because MCP clients act as **logged-in WordPress users**, always treat them as part of your application surface area by following these best practices:
 
 - **Use `permission_callback` carefully**
     - Each ability should check the minimum capability needed (`manage_options`, `edit_posts`, etc.).
@@ -370,27 +440,12 @@ Because MCP clients act as **logged-in WordPress users**, treat them as part of 
 - **Prefer read-only abilities for public MCP endpoints**
     - For HTTP transports exposed over the internet, focus on read-only diagnostics, reporting, and content access.
 - **Monitor and log usage**
-    - Use custom error and observability handlers to integrate with your logging/monitoring stack.[1]
-
-***
+    - Use custom error and observability handlers to integrate with your logging/monitoring stack.
 
 ## How to start experimenting today
 
-To recap, a minimal “hello AI” path for a WordPress developer looks like this:
+If you want to get started experimenting with the MCP adapter, a minimal “hello AI” path for a WordPress developer only requires you to register an ability, require and initialize the MCP Adapter, and connect an MCP-aware AI client.
 
-1. **Define an ability** using `wp_register_ability()`, with clear input/output schemas and a safe `permission_callback`.
-2. **Install and initialize the MCP Adapter** using Composer and `McpAdapter::instance()`.
-3. **Connect an MCP-aware AI client** (Claude Desktop, Claude Code, VS Code extension, etc.) via STDIO using `wp mcp-adapter serve`.
-4. **Let the AI discover and call your abilities**, and iterate from there.
+If you already have plugins using the Abilities API, the MCP Adapter turns them into **AI-ready APIs** with very little additional work.
 
-If you already have plugins using the Abilities API, the MCP Adapter turns them into **AI-ready APIs** with very little additional work.[1]
-
-This combination—Abilities API plus MCP Adapter—gives WordPress developers a powerful path to:
-
-- Build **AI-assisted admin tools**
-- Offer **AI-powered workflows** to clients and teams
-- Keep WordPress at the center of content, code, and AI automation
-
-And this is still just the beginning of what AI Building Blocks for WordPress are designed to unlock.
-
-[1](https://developer.wordpress.org/news/2025/11/introducing-the-wordpress-abilities-api/)
+This combination—Abilities API plus MCP Adapter—gives WordPress developers a powerful path to build things like AI-assisted admin tools and AI-powered automations and workflows for clients and teams, keeping WordPress at the center of your sites content, code, and AI automations
