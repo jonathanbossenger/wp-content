@@ -57,12 +57,14 @@ You can update that section to look like this:
 define( 'WP_DEBUG', true );
 define( 'WP_DEBUG_DISPLAY', false );
 define( 'WP_DEBUG_LOG', true );
+define( 'SCRIPT_DEBUG', true );
 ```
 
 This configuration will:
 1. Enable debugging
 2. Disable displaying errors on screen
 3. Enable logging errors to the wp-content/debug.log file
+4. Load non-minified JavaScript and CSS files for easier debugging
 
 Depending on your personal preference, you can enable displaying the errors on screen, but this can lead to the errors either being missed, or overlaying other important content on screen, which is not ideal. 
 
