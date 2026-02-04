@@ -160,7 +160,6 @@ If you're using the HTTP transport, your minimum configuration should look like 
         "WP_API_PASSWORD": "{application-password}"
       }
     }
-  }
 ```
 
 - the server name

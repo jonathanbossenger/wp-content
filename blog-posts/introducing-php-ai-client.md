@@ -1,36 +1,36 @@
-AI generated draft
+# The WordPress PHP AI Client: A Unified SDK for Building AI-Powered Plugins
 
----
+One of the benefits of having a [WordPress core team dedicated to AI](https://wordpress.org/news/2025/05/announcing-the-formation-of-the-wordpress-ai-team/) is the ability to solve multiple problems at the same time. 
 
-# Introducing the PHP AI Client for WordPress
+The Abilities API and the MCP Adapter solved one problem, how do allow external AI applications (ChatGPT, Claude Desktop, VS Code, Cursor, etc) and automations to interact with any WordPress site in a standardized way.
 
-**By [Your Name]**
+Yet, another problem remains: how can WordPress plugin and theme developers easily add AI-powered features to their products without having to build and maintain complex integrations for multiple AI providers?
 
-*Categories: Common APIs, Plugins, Updates*
+Fortunately, that's exactly why the [PHP AI Client](https://github.com/WordPress/php-ai-client) exists as one of the [AI Building Blocks for WordPress](https://make.wordpress.org/ai/2025/07/17/ai-building-blocks/), it's designed to simplify how developers integrate AI capabilities into their plugins and themes.
 
-Since the [WordPress Core AI team](https://wordpress.org/news/2025/05/announcing-the-formation-of-the-wordpress-ai-team/) was formed, one of the most impactful projects they've been developing is the [PHP AI Client](https://github.com/WordPress/php-ai-client). This provider-agnostic SDK is part of the broader [AI Building Blocks for WordPress](https://make.wordpress.org/ai/2025/07/17/ai-building-blocks/) initiative, and it's designed to transform how developers integrate AI capabilities into their plugins and themes.
-
-If you've ever wanted to add AI features to your WordPress plugin but felt overwhelmed by the complexity of managing multiple AI providers, API credentials, and inconsistent interfaces—this post is for you.
+If you've ever wanted to add AI features to your WordPress plugin but felt overwhelmed by the complexity of managing multiple AI providers, API credentials, and inconsistent interfaces, then this post is for you.
 
 ## The problem it solves
 
 Today, every WordPress plugin with AI features essentially rebuilds the same infrastructure: provider integrations, API key management, response normalization, and error handling. Users enter the same API credentials multiple times across different plugins and deal with inconsistent experiences. When providers change their APIs, every plugin breaks separately.
 
-The PHP AI Client centralizes this complexity. One integration point handles all providers. One credential system serves all plugins. When providers update or new ones emerge, the changes happen once and benefit everyone.
+The PHP AI Client centralizes this complexity. One integration point handles all providers. One credential system serves all plugins. When providers update or new ones emerge, the client can be updated, changes happen once and benefit everyone.
 
-Think of it like the WordPress HTTP API, but for AI. Instead of every plugin implementing its own HTTP client, WordPress provides a unified interface. The PHP AI Client does the same for AI providers like Anthropic, Google, and OpenAI.
+Think of it like the [WordPress HTTP API](https://developer.wordpress.org/plugins/http-api/), but for AI. Instead of every plugin implementing its own HTTP client, the AI Client provides a unified interface. 
 
 ## Two packages, maximum flexibility
 
-The PHP AI Client SDK consists of two Composer packages:
+There are currently two related packages that make up the WordPress AI Client ecosystem:
 
-1. **[PHP AI Client](https://github.com/WordPress/php-ai-client)** — A platform-agnostic PHP library that provides the unified AI interface. It's WordPress-agnostic and benefits the broader PHP ecosystem.
+1. **[PHP AI Client](https://github.com/WordPress/php-ai-client)** — This is platform-agnostic PHP library that provides the unified AI interface. It's WordPress-agnostic so it can be used by any PHP application, not just WordPress, and can therefore also benefit the broader PHP ecosystem.
 
-2. **[WordPress AI Client](https://github.com/WordPress/wp-ai-client)** — A WordPress-specific wrapper that adds an admin settings screen for API credentials, REST API endpoints, and a JavaScript API for client-side usage.
+2. **[WordPress AI Client](https://github.com/WordPress/wp-ai-client)** — This exists as a WordPress-specific wrapper for the PHP AI Client that adds an admin settings screen for API credentials, REST API endpoints, and a JavaScript API for client-side usage.
 
-For most WordPress developers, you'll want to use the WordPress AI Client package, which provides the full experience with admin UI and WordPress-specific integrations.
+You'll want to start with the WordPress AI Client package, which provides the full experience with admin UI and WordPress-specific integrations. Once you understand how it all works, you can also use the underlying PHP AI Client package directly and build your own admin UI.
 
 ## Getting started
+
+Let's build a plugin that can generate text and images based on user prompts for the purpose of creating blog content.
 
 ### Installation
 
