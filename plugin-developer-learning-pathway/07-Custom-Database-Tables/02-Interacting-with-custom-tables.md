@@ -8,6 +8,8 @@ A key aspect of interacting with any database is to ensure the data you send and
 
 SQL injection is a security vulnerability where attackers manipulate SQL queries by injecting malicious code into user input fields. If unsanitized input values are used in queries directly, then an attacker could execute arbitrary SQL commands which compromises your data.
 
+![xkcd comic 327](xkcd_exploits_of_a_mom.png)
+
 Consider this example where user input is inserted directly into a query without validation:
 
 ```php
@@ -17,13 +19,11 @@ $name = $_GET['name'];
 $results = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}reviews WHERE customer_name = '$name'" );
 ```
 
-In this example, an attacker could supply a value like `John'; DROP TABLE wp_submissions;--`, which would delete the entire custom table! Let's see how we can prevent this from happening.
-
-![xkcd comic 327](xkcd_exploits_of_a_mom.png)
+In this example, an attacker could supply a value like `John'; DROP TABLE wp_reviews;--`, which would delete the entire custom table! Let's see how we can prevent this from happening.
 
 ### Using Prepared Statements
 
-To protect against SQL injections, always use **prepared statements**. Prepared statements separate SQL logic from data, ensuring that user inputs are properly sanitized and escaped before being inserted into the query. In WordPress, the [`$wpdb->prepare()`](https://developer.wordpress.org/reference/classes/wpdb/prepare/) method is provided for this purpose. Its used similarly to PHP's [`sprintf()`](https://www.php.net/sprintf) and [`vsprintf()`](https://www.php.net/vsprintf) functions where you use placeholders in your SQL query and pass an array of the corresponding values.
+To protect against SQL injections, always use **prepared statements**. Prepared statements separate SQL logic from data, ensuring that user inputs are properly sanitized and escaped before being inserted into the query. In WordPress, the [`$wpdb->prepare()`](https://developer.wordpress.org/reference/classes/wpdb/prepare/) method is provided for this purpose. It's used similarly to PHP's [`sprintf()`](https://www.php.net/sprintf) and [`vsprintf()`](https://www.php.net/vsprintf) functions where you use placeholders in your SQL query and pass an array of the corresponding values.
 
 Here’s how you can rewrite the previous query to safely handle user input:
 
@@ -56,9 +56,9 @@ In addition to properly escaping dynamic values used in SQL queries, it's also i
 
 Some common [data validation techniques](https://developer.wordpress.org/apis/security/data-validation/) are:
 
-- **Safelist** – Accept data only if it matches a known, trusted value. (eg. selecting a color option)
-- **Blocklist** – Reject data if it matches a known, untrusted value. (eg. rejecting profanity)
-- **Format Detection** – Test that the data matches an accepted format. (eg. formatting phone numbers)
+- **Safelist** – Accept data only if it matches a known, trusted value. (e.g. selecting a color option)
+- **Blocklist** – Reject data if it matches a known, untrusted value. (e.g. rejecting profanity)
+- **Format Detection** – Test that the data matches an accepted format. (e.g. formatting phone numbers)
 
 When comparing untrusted data against the safelist, it’s important to [**use strict type checking**](https://www.php.net/manual/en/language.operators.comparison.php). Otherwise, an attacker could craft input [in a way that will pass validation](https://www.php.net/manual/en/language.types.type-juggling.php) against a safelist, but still have a malicious effect.
 
@@ -179,7 +179,7 @@ To select values from the database by running generic queries, you can also use 
 
 ### Dynamic Queries
 
-Let's assume you now want to add a new feature that allows user to filter reviews by their star rating. The SQL query will ultimately be the same except for which star rating the user selects.
+Let's assume you now want to add a new feature that allows users to filter reviews by their star rating. The SQL query will ultimately be the same except for which star rating the user selects.
 
 Here's how to securely query results dynamically based on the user's request:
 
@@ -286,10 +286,10 @@ if ( false === $deleted ) {
 
 The `$wpdb->delete()` method simply accepts 3 parameters which should look familiar from the previous section:
 
-	1. The table from which to delete matching rows.
-	2. An array of column names and their associated values to determine which matching rows in the table should be deleted.
+1. The table from which to delete matching rows.
+2. An array of column names and their associated values to determine which matching rows in the table should be deleted.
 	 - If we were to pass multiple column-value pairs, the clauses would be joined using logical `AND`.
-	3. An array of formatting placeholders for the `WHERE` clause column values.
+3. An array of formatting placeholders for the `WHERE` clause column values.
 	 - `'%d'` for the review's `id` integer
 
 Finally, the value returned from `$wpdb->delete()` is either the number of rows deleted from the specified table or `false`. Because of this, remember to use the strict comparison operator `===` in PHP to differentiate database errors from `0` rows being deleted.
